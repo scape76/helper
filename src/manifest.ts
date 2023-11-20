@@ -1,11 +1,12 @@
-import { defineManifest } from '@crxjs/vite-plugin'
-import packageData from '../package.json'
+import { defineManifest } from '@crxjs/vite-plugin';
+import packageData from '../package.json';
 
 export default defineManifest({
   name: packageData.name,
   description: packageData.description,
   version: packageData.version,
   manifest_version: 3,
+  host_permissions: ['https://*/'],
   icons: {
     16: 'img/logo-16.png',
     32: 'img/logo-34.png',
@@ -19,13 +20,14 @@ export default defineManifest({
   options_page: 'options.html',
   devtools_page: 'devtools.html',
   background: {
-    service_worker: 'src/background/index.ts',
+    service_worker: 'src/app/background/index.ts',
     type: 'module',
   },
   content_scripts: [
     {
+      run_at: 'document_end',
       matches: ['https://*/*', 'https://www.linkedin.com/in/**/*'],
-      js: ['src/contentScript/index.ts'],
+      js: ['src/app/contentScript/index.ts'],
     },
   ],
   side_panel: {
@@ -41,4 +43,4 @@ export default defineManifest({
   // chrome_url_overrides: {
   //   newtab: 'newtab.html',
   // },
-})
+});

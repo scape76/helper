@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 
-import './Options.css'
-
 export const Options = () => {
   const [countSync, setCountSync] = useState(0)
   const link = 'https://github.com/guocaoyi/create-chrome-ext'

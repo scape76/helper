@@ -1,23 +1,14 @@
-interface ProfileInfo {
-  displayName: string;
-  id: string;
-}
-
-interface Credentials {
-  clientId?: string;
-  clientSecret?: string;
-  code?: string;
-}
+import { Credentials, ProfileInfo } from '.';
 
 enum StorageKeys {
   PROFILE_INFO = 'profile_info',
   CREDENTIALS = 'credentials',
 }
 
-interface ChromeStorage {
+interface ChromeStorageI {
   [StorageKeys.PROFILE_INFO]: ProfileInfo;
   [StorageKeys.CREDENTIALS]: Credentials;
 }
 
-export type { ChromeStorage, Credentials, ProfileInfo };
+export type { ChromeStorageI };
 export { StorageKeys };

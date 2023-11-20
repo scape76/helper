@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 
-import './NewTab.css'
-
 export const NewTab = () => {
   const getTime = () => {
     const date = new Date()

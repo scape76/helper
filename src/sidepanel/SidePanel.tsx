@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 
-import './SidePanel.css'
-
 export const SidePanel = () => {
   const [countSync, setCountSync] = useState(0)
   const link = 'https://github.com/guocaoyi/create-chrome-ext'

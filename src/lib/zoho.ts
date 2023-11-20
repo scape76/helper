@@ -41,13 +41,10 @@ async function getAuthTokens(from?: MessageFrom) {
   if (!credentials) return catchZohoError({ error: 'missing_credentials', to: from });
   try {
     const url = `https://accounts.zoho.eu/oauth/v2/token?client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&code=${credentials.code}&grant_type=authorization_code`;
-    console.log('url', url);
     const res = await fetch(url, {
       method: 'POST',
     });
     const body = await res.json();
-
-    console.log('body', body);
 
     if (body.error) {
       return catchZohoError({ error: body.error, to: from });
@@ -78,9 +75,6 @@ async function getContacts(depth: number = 0) {
   const credentials = await getCredentials();
   if (!credentials) return catchZohoError({ error: 'missing_credentials' });
   try {
-    // if (credentials?.accessToken?.length === 0) await refreshToken();
-
-    console.log('creds', credentials);
     if (credentials.accessToken?.length === 0) {
       const isTokenRetrieved = await refreshToken();
       if (isTokenRetrieved) {
@@ -100,7 +94,6 @@ async function getContacts(depth: number = 0) {
 
     if (body.code === 'INVALID_TOKEN' || body.code === 'AUTHENTICATION_FAILURE') {
       const isTokenRetrieved = await refreshToken();
-      console.log('is token retreived', isTokenRetrieved);
       if (isTokenRetrieved) {
         return getContacts(depth + 1);
       }
@@ -142,10 +135,6 @@ async function getContactByFullname(fullName: string, depth: number = 0) {
 
   const [firstName, lastName] = fullName.split(' ');
 
-  console.log(credentials);
-
-  console.log(firstName, lastName);
-
   const res = await fetch(
     `https://www.zohoapis.eu/bigin/v1/Contacts/search?criteria=((Last_Name:equals:${lastName})and(First_Name:equals:${firstName}))`,
     {
@@ -155,16 +144,11 @@ async function getContactByFullname(fullName: string, depth: number = 0) {
     },
   );
 
-  console.log('response', res);
-
   const string = await res.text();
   const body = string === '' ? {} : JSON.parse(string);
 
-  console.log('body', body);
-
   if (body.code === 'INVALID_TOKEN' || body.code === 'AUTHENTICATION_FAILURE') {
     const isTokenRetrieved = await refreshToken();
-    console.log('is token retreived', isTokenRetrieved);
 
     if (isTokenRetrieved) {
       return getContactByFullname(fullName, depth + 1);
@@ -218,16 +202,11 @@ async function createContact(profile: ProfileInfo, depth: number = 0) {
     }),
   });
 
-  console.log('response', res);
-
   const string = await res.text();
   const body = string === '' ? {} : JSON.parse(string);
 
-  console.log('body', body);
-
   if (body.code === 'INVALID_TOKEN' || body.code === 'AUTHENTICATION_FAILURE') {
     const isTokenRetrieved = await refreshToken();
-    console.log('is token retreived', isTokenRetrieved);
 
     if (isTokenRetrieved) {
       return createContact(profile, depth + 1);
@@ -253,8 +232,6 @@ async function refreshToken() {
       method: 'POST',
     });
     const body = await res.json();
-
-    console.log('body in refresh', body);
 
     if (body.error) {
       catchZohoError({ error: body.error, description: body.error_description });

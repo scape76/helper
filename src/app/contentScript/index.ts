@@ -3,8 +3,6 @@ import { extractIdFromLinkedInURL } from '@/lib/utils';
 
 console.info('contentScript is running');
 
-console.log(window.location.pathname);
-
 const linkedinRegex = /^https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/;
 
 chrome.runtime.onMessage.addListener((msg, sender, response) => {
@@ -34,7 +32,6 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
     const observer = new MutationObserver(() => {
       if (contextUrl !== window.location.href) {
-        console.log('URL CHANGED');
         const emailElement = document.querySelector('a[href*="mailto"]') as HTMLAnchorElement;
         const email = emailElement.innerText;
 

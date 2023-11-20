@@ -42,7 +42,6 @@ export const Profile = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
-  console.log(profileInfo, error);
 
   const searchForCRMRecord = useCallback(() => {
     if (!profileInfo) return;
@@ -57,7 +56,6 @@ export const Profile = () => {
         },
       },
       (response: CRMQueryStatusResponse) => {
-        console.log('RECEIVED CONTACTS', response);
         setCRMQueryStatus(response);
         setIsLoading(false);
         if (typeof response === 'object' && 'message' in response) {
@@ -80,7 +78,6 @@ export const Profile = () => {
         },
       },
       (response: CRMQueryStatusResponse) => {
-        console.log('RECEIVED CONTACTS', response);
         setCRMQueryStatus(response);
         setIsCreating(false);
         if (typeof response === 'object' && 'message' in response) {

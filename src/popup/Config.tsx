@@ -55,7 +55,6 @@ export const Config = () => {
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener((msg, sender, response) => {
-      console.log('message', msg);
       if (msg.subject === MessageSubject.FETCH_ERROR && msg.to === MessageFrom.CONFIG) {
         setError(msg.error);
         response();

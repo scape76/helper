@@ -10,7 +10,6 @@ const getCredentials = async () => {
 };
 
 chrome.runtime.onMessage.addListener((msg, sender, response) => {
-  console.log('message', msg);
   if (msg.from === MessageFrom.POPUP && msg.subject === MessageSubject.INFO_QUERY) {
     getCredentials().then((credentials) => {
       if (!credentials) {
@@ -40,8 +39,6 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
       if (!msg.payload.profile) return response(null);
 
       const data = await createContact(msg.payload.profile);
-
-      console.log('CREATED data', data);
 
       if (data) {
         response('CREATED');

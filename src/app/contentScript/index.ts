@@ -32,8 +32,8 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
     const observer = new MutationObserver(() => {
       if (contextUrl !== window.location.href) {
-        const emailElement = document.querySelector('a[href*="mailto"]') as HTMLAnchorElement;
-        const email = emailElement.innerText;
+        const emailElement = document.querySelector('a[href*="mailto"]') as HTMLAnchorElement | null;
+        const email = emailElement?.innerText;
 
         const closeElement = document.querySelector(
           'button[aria-label="Dismiss"]',

@@ -42,7 +42,6 @@ export const Profile = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
-
   const searchForCRMRecord = useCallback(() => {
     if (!profileInfo) return;
     setError(undefined);

@@ -24,7 +24,8 @@ import {
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const configSchema = z.object({
   clientId: z.string(),
@@ -39,6 +40,11 @@ export const Config = () => {
 
   const form = useForm<z.infer<typeof configSchema>>({
     resolver: zodResolver(configSchema),
+    defaultValues: {
+      clientId: '',
+      clientSecret: '',
+      code: '',
+    },
   });
 
   useEffect(() => {
@@ -168,7 +174,9 @@ export const Config = () => {
           />
           <span className="w-full break-words text-muted-foreground mt-2">
             * Provide a scope with
-            ZohoBigin.modules.Contacts.CREATE,ZohoSearch.securesearch.READ,ZohoBigin.modules.Contacts.READ
+            <p>
+              ZohoBigin.modules.Contacts.CREATE,ZohoSearch.securesearch.READ,ZohoBigin.modules.Contacts.READ
+            </p>
           </span>
           <Button type="submit" className="w-full" disabled={isInitialized}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -18,7 +18,17 @@ const ErrorTypes = {
   invalidUrl: 'INVALID_URL',
   undefinedCredentials: 'UNDEFINED_CREDENTIALS',
   fetchError: 'FETCH_ERROR',
+  invalidName: 'INVALID_NAME',
 } as const;
+
+const ContactQueryStatus = {
+  found: 'FOUND',
+  notFound: 'NOT_FOUND',
+  created: 'CREATED',
+  error: 'ERROR',
+} as const;
+
+type ContactQueryStatus = (typeof ContactQueryStatus)[keyof typeof ContactQueryStatus];
 
 type ErrorTypes = (typeof ErrorTypes)[keyof typeof ErrorTypes];
 
@@ -33,7 +43,7 @@ type ProfileInfoResponse = ErrorMessage | ProfileInfo;
 
 type CRMInfoResponse = ErrorMessage | CRMInfo;
 
-type CRMQueryStatusResponse = 'FOUND' | 'NOT_FOUND' | 'CREATED' | ErrorMessage;
+type CRMQueryStatusResponse = ContactQueryStatus | ErrorMessage;
 
 export type {
   Credentials,
@@ -44,7 +54,7 @@ export type {
   CRMQueryStatusResponse,
 };
 
-export { ErrorTypes };
+export { ErrorTypes, ContactQueryStatus };
 
 export * from './chrome-storage';
 export * from './message';

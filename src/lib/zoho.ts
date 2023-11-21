@@ -1,6 +1,7 @@
 import { ErrorTypes, ProfileInfo, StorageKeys, MessageFrom, MessageSubject } from '@/types';
 import { ChromeStorage } from './chrome-storage';
 import { Message } from 'postcss';
+import { catchZohoError } from './utils';
 
 interface ZohoMessage {
   email: string;
@@ -14,33 +15,14 @@ async function getCredentials() {
   return ChromeStorage.get(StorageKeys.CREDENTIALS);
 }
 
-function catchZohoError({
-  error,
-  description,
-  to,
-}: {
-  error: string;
-  description?: string;
-  to?: MessageFrom;
-}) {
-  const message =
-    description ?? zohoErrorToMessage[error] ?? 'Something went wrong, please try again later';
-  chrome.runtime.sendMessage({
-    from: MessageFrom.BACKGROUND,
-    subject: MessageSubject.FETCH_ERROR,
-    to,
-    error: {
-      type: ErrorTypes.fetchError,
-      message,
-    },
-  });
-}
+const zohoAccountsDomain = 'https://accounts.zoho.eu';
+const zohoApisDomain = 'https://www.zohoapis.eu';
 
 async function getAuthTokens(from?: MessageFrom) {
   const credentials = await getCredentials();
   if (!credentials) return catchZohoError({ error: 'missing_credentials', to: from });
   try {
-    const url = `https://accounts.zoho.eu/oauth/v2/token?client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&code=${credentials.code}&grant_type=authorization_code`;
+    const url = `${zohoAccountsDomain}/oauth/v2/token?client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&code=${credentials.code}&grant_type=authorization_code`;
     const res = await fetch(url, {
       method: 'POST',
     });
@@ -84,7 +66,7 @@ async function getContacts(depth: number = 0) {
       }
     }
 
-    const res = await fetch('https://www.zohoapis.eu/bigin/v1/Contacts', {
+    const res = await fetch(`${zohoApisDomain}/bigin/v1/Contacts`, {
       headers: {
         Authorization: `${credentials.accessToken}`,
       },
@@ -136,7 +118,7 @@ async function getContactByFullname(fullName: string, depth: number = 0) {
   const [firstName, lastName] = fullName.split(' ');
 
   const res = await fetch(
-    `https://www.zohoapis.eu/bigin/v1/Contacts/search?criteria=((Last_Name:equals:${lastName})and(First_Name:equals:${firstName}))`,
+    `${zohoApisDomain}/bigin/v1/Contacts/search?criteria=((Last_Name:equals:${lastName})and(First_Name:equals:${firstName}))`,
     {
       headers: {
         Authorization: `${credentials.accessToken}`,
@@ -185,7 +167,7 @@ async function createContact(profile: ProfileInfo, depth: number = 0) {
 
   const [firstName, lastName] = profile.displayName.split(' ');
 
-  const res = await fetch(`https://www.zohoapis.eu/bigin/v1/Contacts`, {
+  const res = await fetch(`${zohoApisDomain}/bigin/v1/Contacts`, {
     method: 'POST',
     headers: {
       Authorization: `${credentials.accessToken}`,
@@ -227,7 +209,7 @@ async function refreshToken() {
   if (!credentials) return;
   try {
     // Make a POST request to Zoho token endpoint to refresh the access token
-    const url = `https://accounts.zoho.eu/oauth/v2/token?refresh_token=${credentials.refreshToken}&client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&grant_type=refresh_token`;
+    const url = `${zohoAccountsDomain}/oauth/v2/token?refresh_token=${credentials.refreshToken}&client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&grant_type=refresh_token`;
     const res = await fetch(url, {
       method: 'POST',
     });
@@ -247,14 +229,5 @@ async function refreshToken() {
     return false;
   }
 }
-
-const zohoErrorToMessage: Record<string, string> = {
-  invalid_code: 'Invalid credentials',
-  missing_credentials: 'Credentials not set',
-  OAUTH_SCOPE_MISMATCH:
-    'Missing necessary permissions to create a new record. Please, provide a new code with ZohoBigin.modules.Contacts.CREATE,ZohoSearch.securesearch.READ,ZohoBigin.modules.Contacts.READ',
-};
-
-const biginDomain = 'https://accounts.zoho.eu';
 
 export { getAuthTokens, getContactByFullname, getContacts, createContact };

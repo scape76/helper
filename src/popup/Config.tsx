@@ -1,7 +1,6 @@
 import { useState, useEffect, useReducer, useCallback } from 'react';
 import {
   Credentials,
-  ProfileInfo,
   StorageKeys,
   MessageSubject,
   MessageFrom,
@@ -11,11 +10,9 @@ import { ChromeStorage } from '@/lib/chrome-storage';
 import { Input } from '@/components/ui/input';
 import '@/globals.css';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,8 +21,7 @@ import {
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Info, Loader2 } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Loader2 } from 'lucide-react';
 
 const configSchema = z.object({
   clientId: z.string(),
@@ -91,15 +87,20 @@ export const Config = () => {
     );
   };
 
+  const handleFieldChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (...event: any[]) => void,
+  ) => {
+    saveToStorage();
+    setIsInitialized(false);
+    onChange(e);
+  };
+
   return (
     <main className="min-w-[400px] p-6">
       <p className="text-[1rem] mb-4">
         You can get the credentials{' '}
-        <a
-          href="https://www.bigin.com/developer/docs/apis/register-client.html"
-          target="_blank"
-          className="underline"
-        >
+        <a href="https://api-console.zoho.eu/" target="_blank" className="underline">
           here
         </a>{' '}
         (register a self client)
@@ -118,9 +119,7 @@ export const Config = () => {
                     type="text"
                     value={field.value}
                     onChange={(e) => {
-                      field.onChange(e);
-                      saveToStorage();
-                      setIsInitialized(false);
+                      handleFieldChange(e, field.onChange);
                     }}
                   />
                 </FormControl>
@@ -140,9 +139,7 @@ export const Config = () => {
                     type="text"
                     value={field.value}
                     onChange={(e) => {
-                      field.onChange(e);
-                      saveToStorage();
-                      setIsInitialized(false);
+                      handleFieldChange(e, field.onChange);
                     }}
                   />
                 </FormControl>
@@ -162,9 +159,7 @@ export const Config = () => {
                     type="text"
                     value={field.value}
                     onChange={(e) => {
-                      field.onChange(e);
-                      saveToStorage();
-                      setIsInitialized(false);
+                      handleFieldChange(e, field.onChange);
                     }}
                   />
                 </FormControl>

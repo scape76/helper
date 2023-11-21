@@ -1,30 +1,52 @@
 import { ErrorTypes, ProfileInfo, MessageFrom, MessageSubject } from '@/types';
 import { extractIdFromLinkedInURL } from '@/lib/utils';
+import { linkedInProfilePageConfig, linkedInProfileUrlRegex } from '@/lib/config';
+
+const {
+  avatarElementSelectors,
+  closeContactInfoElement,
+  emailElement: emailElementSelector,
+  contactInfoElement: contactInfoElementSelector,
+  nameElementSelectors,
+} = linkedInProfilePageConfig;
 
 console.info('contentScript is running');
 
-const linkedinRegex = /^https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/;
+const getElementBySelectors = <T>(...args: string[]): T | null => {
+  for (const selector of args) {
+    const element = document.querySelector(selector) as T;
+    if (element) return element;
+  }
+
+  return null;
+};
 
 chrome.runtime.onMessage.addListener((msg, sender, response) => {
   if (msg.from === MessageFrom.POPUP && msg.subject === MessageSubject.PROFILE_INFO) {
     const contextUrl = window.location.href;
 
-    if (!linkedinRegex.test(contextUrl)) {
+    if (!linkedInProfileUrlRegex.test(contextUrl)) {
       response({
         type: ErrorTypes.invalidUrl,
         message: "It doesn't look like you are on a LinkedIn profile page.",
       });
     }
 
-    const bodyList = document.querySelector('body');
+    const bodyList = getElementBySelectors<HTMLBodyElement>('body');
 
     if (!bodyList) return;
 
-    const h1 = (document.querySelector('h1.text-heading-xlarge') ??
-      document.querySelector('h1.heading-large')) as HTMLHeadingElement;
-    const name = h1?.innerText;
-    const avatarImgElement = (document.querySelector('img[data-show-modal="true"]') ??
-      document.querySelector(`img[title="${name}"]`)) as HTMLImageElement;
+    let h1 = getElementBySelectors<HTMLHeadingElement>(
+      nameElementSelectors.website,
+      nameElementSelectors.app,
+    );
+
+    let name = h1?.innerText ?? 'Anonymous';
+
+    const avatarImgElement = getElementBySelectors<HTMLImageElement>(
+      avatarElementSelectors.website,
+      avatarElementSelectors.app(name),
+    );
 
     const avatarUrl = avatarImgElement?.src;
 
@@ -32,13 +54,11 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
     const observer = new MutationObserver(() => {
       if (contextUrl !== window.location.href) {
-        const emailElement = document.querySelector('a[href*="mailto"]') as HTMLAnchorElement | null;
+        const emailElement = getElementBySelectors<HTMLAnchorElement>(emailElementSelector);
         const email = emailElement?.innerText;
 
-        const closeElement = document.querySelector(
-          'button[aria-label="Dismiss"]',
-        ) as HTMLButtonElement;
-        closeElement.click();
+        const closeElement = getElementBySelectors<HTMLButtonElement>(closeContactInfoElement);
+        closeElement?.click();
 
         const profileInfo: ProfileInfo = {
           displayName: name ?? 'Anonymous',
@@ -56,9 +76,7 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
     observer.observe(bodyList, { childList: true, subtree: true });
 
-    const contactInfoElement = document.querySelector(
-      `a[href="/in/${id}/overlay/contact-info/"]`,
-    ) as HTMLAnchorElement;
+    const contactInfoElement = getElementBySelectors<HTMLAnchorElement>(contactInfoElementSelector);
 
     if (!contactInfoElement) {
       response({
@@ -68,11 +86,8 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
         description: contextUrl,
       });
     }
-    contactInfoElement?.click();
 
-    if (!id) {
-      throw new Error("Coldn't extract id from the current user's profile");
-    }
+    contactInfoElement?.click();
 
     return true;
   }

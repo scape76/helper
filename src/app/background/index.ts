@@ -1,4 +1,4 @@
-import { CRMInfoResponse, Credentials, ErrorTypes, StorageKeys } from '@/types';
+import { CRMInfoResponse, ContactQueryStatus, Credentials, ErrorTypes, StorageKeys } from '@/types';
 import { MessageFrom, MessageSubject } from '@/types/message';
 import { ChromeStorage } from '@/lib/chrome-storage';
 import { createContact, getAuthTokens, getContactByFullname, getContacts } from '@/lib/zoho';
@@ -16,14 +16,19 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
         return response({ message: 'Credentials not set!', type: ErrorTypes.undefinedCredentials });
       }
 
-      if (!msg.payload.fullName) return response(null);
+      if (!msg.payload.fullName) {
+        return response({
+          message: 'No display name provided',
+          type: ErrorTypes.undefinedCredentials,
+        });
+      }
 
       getContactByFullname(msg.payload.fullName).then((contact) => {
         if (contact) {
-          response('FOUND');
+          response(ContactQueryStatus.found);
         }
 
-        response('NOT_FOUND');
+        response(ContactQueryStatus.notFound);
       });
     });
 
@@ -41,10 +46,10 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
       const data = await createContact(msg.payload.profile);
 
       if (data) {
-        response('CREATED');
+        response(ContactQueryStatus.created);
       }
 
-      response('ERROR');
+      response(ContactQueryStatus.error);
     });
 
     return true;

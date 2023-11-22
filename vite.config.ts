@@ -9,7 +9,7 @@ import manifest from './src/manifest';
 export default defineConfig(({ mode }) => {
   return {
     esbuild: {
-      drop: ['console'],
+      drop: [],
     },
     build: {
       emptyOutDir: true,

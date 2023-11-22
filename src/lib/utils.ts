@@ -22,6 +22,14 @@ const zohoErrorToMessage: Record<string, string> = {
   missing_credentials: 'Credentials not set',
   OAUTH_SCOPE_MISMATCH:
     'Missing necessary permissions to create a new record. Please, provide a new code with ZohoBigin.modules.Contacts.CREATE,ZohoSearch.securesearch.READ,ZohoBigin.modules.Contacts.READ',
+  AUTHENTICATION_FAILED: "Zoho client wasn't initialized.",
+  INVALID_TOKEN: 'Something went wrong, please try re-initalizing zoho client.',
+  FEATURE_NOT_SUPPORTED: "This feature is not supported.",
+  NO_PERMISSION: "You have no permissions to do that",
+  INVALID_MODULE: "Invalid module provided in configuration",
+  INVALID_DATA: "Invalid data provided",
+  DUPLICATE_DATA: "Provided data is a duplicate",
+  MANDATORY_NOT_FOUND: "Primary key wasn't provided",
 };
 
 function catchZohoError({

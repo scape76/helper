@@ -1,7 +1,7 @@
 import { CRMInfoResponse, ContactQueryStatus, Credentials, ErrorTypes, StorageKeys } from '@/types';
 import { MessageFrom, MessageSubject } from '@/types/message';
 import { ChromeStorage } from '@/lib/chrome-storage';
-import { createContact, getAuthTokens, getContactByFullname, getContacts } from '@/lib/zoho';
+import { createContact, getAuthTokens, getContactByFullname } from '@/lib/zoho';
 
 console.log('background is running');
 

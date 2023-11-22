@@ -15,19 +15,21 @@ async function getCredentials() {
   return ChromeStorage.get(StorageKeys.CREDENTIALS);
 }
 
-const zohoAccountsDomain = 'https://accounts.zoho.eu';
-const zohoApisDomain = 'https://www.zohoapis.eu';
+const ZOHO_ACCOUNTS_DOMAIN = 'https://accounts.zoho.eu';
+const ZOHO_API_DOMAIN = 'https://www.zohoapis.eu';
 
 async function getAuthTokens(from?: MessageFrom) {
   const credentials = await getCredentials();
   if (!credentials) return catchZohoError({ error: 'missing_credentials', to: from });
   try {
-    const url = `${zohoAccountsDomain}/oauth/v2/token?client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&code=${credentials.code}&grant_type=authorization_code`;
+    const url = `${ZOHO_ACCOUNTS_DOMAIN}/oauth/v2/token?client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&code=${credentials.code}&grant_type=authorization_code`;
     const res = await fetch(url, {
       method: 'POST',
     });
+
     const body = await res.json();
 
+    // it may return 200 res with an error
     if (body.error) {
       return catchZohoError({ error: body.error, to: from });
     }
@@ -46,53 +48,6 @@ async function getAuthTokens(from?: MessageFrom) {
       subject: MessageSubject.FETCH_ERROR,
       error: { type: ErrorTypes.fetchError, message: err },
     });
-  }
-}
-
-async function getContacts(depth: number = 0) {
-  if (depth > 1) {
-    catchZohoError({ error: 'Too many requests' });
-    return;
-  }
-  const credentials = await getCredentials();
-  if (!credentials) return catchZohoError({ error: 'missing_credentials' });
-  try {
-    if (credentials.accessToken?.length === 0) {
-      const isTokenRetrieved = await refreshToken();
-      if (isTokenRetrieved) {
-        return getContacts(depth + 1);
-      } else {
-        return;
-      }
-    }
-
-    const res = await fetch(`${zohoApisDomain}/bigin/v1/Contacts`, {
-      headers: {
-        Authorization: `${credentials.accessToken}`,
-      },
-    });
-
-    const body = await res.json();
-
-    if (body.code === 'INVALID_TOKEN' || body.code === 'AUTHENTICATION_FAILURE') {
-      const isTokenRetrieved = await refreshToken();
-      if (isTokenRetrieved) {
-        return getContacts(depth + 1);
-      }
-      throw new Error(body.error ?? 'Authentication failed');
-    }
-
-    if (body.error) {
-      return catchZohoError(body.error);
-    }
-
-    return body.data;
-  } catch (e) {
-    if (e instanceof Error) {
-      catchZohoError({ error: e.message });
-    }
-
-    catchZohoError({ error: 'Something went wrong' });
   }
 }
 
@@ -118,7 +73,7 @@ async function getContactByFullname(fullName: string, depth: number = 0) {
   const [firstName, lastName] = fullName.split(' ');
 
   const res = await fetch(
-    `${zohoApisDomain}/bigin/v1/Contacts/search?criteria=((Last_Name:equals:${lastName})and(First_Name:equals:${firstName}))`,
+    `${ZOHO_API_DOMAIN}/bigin/v1/Contacts/search?criteria=((Last_Name:equals:${lastName})and(First_Name:equals:${firstName}))`,
     {
       headers: {
         Authorization: `${credentials.accessToken}`,
@@ -129,17 +84,15 @@ async function getContactByFullname(fullName: string, depth: number = 0) {
   const string = await res.text();
   const body = string === '' ? {} : JSON.parse(string);
 
-  if (body.code === 'INVALID_TOKEN' || body.code === 'AUTHENTICATION_FAILURE') {
+  console.log('RESPONSE STATUS', res);
+
+  if (res.status === 401) {
     const isTokenRetrieved = await refreshToken();
 
     if (isTokenRetrieved) {
       return getContactByFullname(fullName, depth + 1);
     }
 
-    return catchZohoError(body.error);
-  }
-
-  if (body.error) {
     return catchZohoError(body.error);
   }
 
@@ -167,7 +120,7 @@ async function createContact(profile: ProfileInfo, depth: number = 0) {
 
   const [firstName, lastName] = profile.displayName.split(' ');
 
-  const res = await fetch(`${zohoApisDomain}/bigin/v1/Contacts`, {
+  const res = await fetch(`${ZOHO_API_DOMAIN}/bigin/v1/Contacts`, {
     method: 'POST',
     headers: {
       Authorization: `${credentials.accessToken}`,
@@ -187,7 +140,7 @@ async function createContact(profile: ProfileInfo, depth: number = 0) {
   const string = await res.text();
   const body = string === '' ? {} : JSON.parse(string);
 
-  if (body.code === 'INVALID_TOKEN' || body.code === 'AUTHENTICATION_FAILURE') {
+  if (res.status === 401) {
     const isTokenRetrieved = await refreshToken();
 
     if (isTokenRetrieved) {
@@ -197,37 +150,31 @@ async function createContact(profile: ProfileInfo, depth: number = 0) {
     return catchZohoError(body.error);
   }
 
-  if (body.error || body.status === 'error') {
-    return catchZohoError(body.error || body.code);
-  }
-
   return body.data?.[0];
 }
 
 async function refreshToken() {
   const credentials = await getCredentials();
+
   if (!credentials) return;
-  try {
-    // Make a POST request to Zoho token endpoint to refresh the access token
-    const url = `${zohoAccountsDomain}/oauth/v2/token?refresh_token=${credentials.refreshToken}&client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&grant_type=refresh_token`;
-    const res = await fetch(url, {
-      method: 'POST',
-    });
-    const body = await res.json();
 
-    if (body.error) {
-      catchZohoError({ error: body.error, description: body.error_description });
-      return false;
-    }
+  const url = `${ZOHO_ACCOUNTS_DOMAIN}/oauth/v2/token?refresh_token=${credentials.refreshToken}&client_id=${credentials.clientId}&client_secret=${credentials.clientSecret}&grant_type=refresh_token`;
+  const res = await fetch(url, {
+    method: 'POST',
+  });
 
-    const accessToken = `${body.token_type} ${body.access_token}`;
-    ChromeStorage.set({
-      credentials: { ...credentials, accessToken },
-    });
-    return true;
-  } catch (e) {
+  const body = await res.json();
+
+  if (res.status === 401 || res.status === 400 || res.status === 403) {
+    catchZohoError(body.error);
     return false;
   }
+
+  const accessToken = `${body.token_type} ${body.access_token}`;
+  ChromeStorage.set({
+    credentials: { ...credentials, accessToken },
+  });
+  return true;
 }
 
-export { getAuthTokens, getContactByFullname, getContacts, createContact };
+export { getAuthTokens, getContactByFullname, createContact };

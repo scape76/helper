@@ -11,6 +11,7 @@ import {
   ProfileInfoResponse,
   MessageFrom,
   MessageSubject,
+  ContactQueryStatus,
 } from '@/types';
 import { AlertTriangle, Loader2, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -146,7 +147,7 @@ export const Profile = () => {
               Look for record in CRM
             </Button>
           )}
-          {crmQueryStatus === 'NOT_FOUND' && (
+          {crmQueryStatus === ContactQueryStatus.notFound && (
             <>
               <span className="text-muted-foreground">
                 There is no related record in CRM, do you want to create one?
@@ -190,7 +191,7 @@ export const Profile = () => {
             </>
           )}
 
-          {crmQueryStatus === 'FOUND' && (
+          {crmQueryStatus === ContactQueryStatus.found && (
             <>
               <span className="text-[0.8rem] text-muted-foreground text-center">
                 Contact with the full name of {profileInfo.displayName} already exists in CRM
@@ -198,7 +199,7 @@ export const Profile = () => {
             </>
           )}
 
-          {crmQueryStatus === 'CREATED' && (
+          {crmQueryStatus === ContactQueryStatus.created && (
             <span className="text-muted-foreground">Successfully created a new record</span>
           )}
 

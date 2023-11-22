@@ -13,6 +13,7 @@ enum MessageRecipient {
 
 enum MessageFrom {
   POPUP = 'popup',
+  SCRIPT = 'content-stript',
   CONFIG = 'config',
   PROFILE = 'profile',
   BACKGROUND = 'background',

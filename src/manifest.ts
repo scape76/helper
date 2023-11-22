@@ -23,9 +23,9 @@ export default defineManifest({
   },
   content_scripts: [
     {
-      run_at: 'document_end',
-      matches: ['https://*/*', 'https://www.linkedin.com/in/**/*'],
-      js: ['src/app/contentScript/index.ts'],
+      run_at: 'document_start',
+      matches: ['*://*.linkedin.com/*'],
+      js: ['src/app/contentScript/main.tsx'],
     },
   ],
   web_accessible_resources: [
@@ -34,7 +34,7 @@ export default defineManifest({
       matches: [],
     },
   ],
-  permissions: ['sidePanel', 'storage'],
+  permissions: ['sidePanel', 'storage', 'webNavigation'],
   // chrome_url_overrides: {
   //   newtab: 'newtab.html',
   // },

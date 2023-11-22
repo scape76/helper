@@ -10,7 +10,10 @@ const getCredentials = async () => {
 };
 
 chrome.runtime.onMessage.addListener((msg, sender, response) => {
-  if (msg.from === MessageFrom.POPUP && msg.subject === MessageSubject.INFO_QUERY) {
+  if (
+    (msg.from === MessageFrom.POPUP || msg.from === MessageFrom.SCRIPT) &&
+    msg.subject === MessageSubject.INFO_QUERY
+  ) {
     getCredentials().then((credentials) => {
       if (!credentials) {
         return response({ message: 'Credentials not set!', type: ErrorTypes.undefinedCredentials });

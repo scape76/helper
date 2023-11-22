@@ -1,5 +1,5 @@
 import { ErrorTypes, ProfileInfo, MessageFrom, MessageSubject } from '@/types';
-import { extractIdFromLinkedInURL } from '@/lib/utils';
+import { extractIdFromLinkedInURL, getElementBySelectors } from '@/lib/utils';
 import { linkedInProfilePageConfig, linkedInProfileUrlRegex } from '@/lib/config';
 
 const {
@@ -11,15 +11,6 @@ const {
 } = linkedInProfilePageConfig;
 
 console.info('contentScript is running');
-
-const getElementBySelectors = <T>(...args: string[]): T | null => {
-  for (const selector of args) {
-    const element = document.querySelector(selector) as T;
-    if (element) return element;
-  }
-
-  return null;
-};
 
 chrome.runtime.onMessage.addListener((msg, sender, response) => {
   if (msg.from === MessageFrom.POPUP && msg.subject === MessageSubject.PROFILE_INFO) {
@@ -50,7 +41,7 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
     const avatarUrl = avatarImgElement?.src;
 
-    const id = extractIdFromLinkedInURL(contextUrl);
+    const id = extractIdFromLinkedInURL(contextUrl) ?? '';
 
     const observer = new MutationObserver(() => {
       if (contextUrl !== window.location.href) {
@@ -64,7 +55,7 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
           displayName: name ?? 'Anonymous',
           email,
           avatarUrl,
-          id: id ?? '',
+          id,
           description: contextUrl,
         };
 
@@ -76,17 +67,19 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
     observer.observe(bodyList, { childList: true, subtree: true });
 
-    const contactInfoElement = getElementBySelectors<HTMLAnchorElement>(contactInfoElementSelector);
+    const contactInfoElement = getElementBySelectors<HTMLAnchorElement>(
+      contactInfoElementSelector(id),
+    );
 
     if (!contactInfoElement) {
       response({
         displayName: name ?? 'Anonymous',
         avatarUrl,
-        id: id ?? '',
+        id,
         description: contextUrl,
       });
     }
-
+    
     contactInfoElement?.click();
 
     return true;

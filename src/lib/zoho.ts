@@ -84,8 +84,6 @@ async function getContactByFullname(fullName: string, depth: number = 0) {
   const string = await res.text();
   const body = string === '' ? {} : JSON.parse(string);
 
-  console.log('RESPONSE STATUS', res);
-
   if (res.status === 401) {
     const isTokenRetrieved = await refreshToken();
 

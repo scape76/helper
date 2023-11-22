@@ -7,8 +7,8 @@ const linkedInProfilePageConfig = {
     website: 'img[data-show-modal="true"]',
     app: (name: string) => `img[title="${name}"]`,
   },
-  contactInfoElement: 'a[href="/in/${id}/overlay/contact-info/"]',
-  emailElement: 'a[href*="mailto"]',
+  contactInfoElement: (id: string) => `a[href="/in/${id}/overlay/contact-info/"]`,
+  emailElement: "a[href*='mailto']",
   closeContactInfoElement: 'button[aria-label="Dismiss"]',
 };
 

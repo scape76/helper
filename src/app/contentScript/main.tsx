@@ -56,6 +56,8 @@ window.addEventListener('load', () => {
   previousUrl = location.href;
 
   bodyList = document.querySelector('body');
+  
+  if (bodyList) observer.observe(bodyList, config);
 
   body = getElementBySelectors<HTMLDivElement>(
     '.MaviszEJVEcLnQUlFveFTDDMDVYOpHbcIKJOgVaQ',
@@ -78,5 +80,4 @@ window.addEventListener('load', () => {
 
   root.render(<App key={location.href} />);
 
-  if (bodyList) observer.observe(bodyList, config);
 });

@@ -14,23 +14,23 @@ const tabs = {
 type Tabs = (typeof tabs)[keyof typeof tabs];
 
 export const Popup = () => {
-  const [tab, setTab] = useState<Tabs>(tabs.profile);
+  const [tab, setTab] = useState<Tabs>(tabs.config);
 
   return (
     <main className="w-[440px] p-4">
       <Tabs value={tab} onValueChange={(val) => setTab(val as Tabs)}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value={tabs.profile}>
+        <TabsList className="w-full">
+          {/* <TabsTrigger value={tabs.profile}>
             <User2 className="w-4 h-4 mr-2" />
             Profile
-          </TabsTrigger>
-          <TabsTrigger value={tabs.config}>
+          </TabsTrigger> */}
+          <TabsTrigger value={tabs.config} className='w-full'>
             <Settings className="w-4 h-4 mr-2" /> Config
           </TabsTrigger>
         </TabsList>
-        <TabsContent forceMount hidden={tab === tabs.config} value="profile">
+        {/* <TabsContent forceMount hidden={tab === tabs.config} value="profile">
           <Profile />
-        </TabsContent>
+        </TabsContent> */}
         <TabsContent forceMount hidden={tab === tabs.profile} value="config">
           <Config />
         </TabsContent>

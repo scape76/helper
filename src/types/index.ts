@@ -2,7 +2,7 @@ interface ProfileInfo {
   avatarUrl?: string;
   email?: string;
   displayName: string;
-  id: string;
+  publicId: string;
   description: string;
 }
 
@@ -26,6 +26,7 @@ const ContactQueryStatus = {
   notFound: 'NOT_FOUND',
   created: 'CREATED',
   error: 'ERROR',
+  deleted: 'DELETED',
 } as const;
 
 type ContactQueryStatus = (typeof ContactQueryStatus)[keyof typeof ContactQueryStatus];
@@ -43,7 +44,7 @@ type ProfileInfoResponse = ErrorMessage | ProfileInfo;
 
 type CRMInfoResponse = ErrorMessage | CRMInfo;
 
-type CRMQueryStatusResponse = ContactQueryStatus | ErrorMessage;
+type CRMQueryStatusResponse = { status: ContactQueryStatus; payload: any } | ErrorMessage;
 
 export type {
   Credentials,

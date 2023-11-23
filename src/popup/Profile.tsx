@@ -39,7 +39,7 @@ const getProfileInfoFromContent = async (): Promise<ProfileInfoResponse> => {
 export const Profile = () => {
   const [profileInfo, setProfileInfo] = useState<ProfileInfo>();
   const [error, setError] = useState<ErrorMessage>();
-  const [crmQueryStatus, setCRMQueryStatus] = useState<CRMQueryStatusResponse>();
+  const [crmQueryStatus, setCRMQueryStatus] = useState<ContactQueryStatus>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
@@ -56,10 +56,11 @@ export const Profile = () => {
         },
       },
       (response: CRMQueryStatusResponse) => {
-        setCRMQueryStatus(response);
         setIsLoading(false);
         if (typeof response === 'object' && 'message' in response) {
           setError(response);
+        } else {
+          setCRMQueryStatus(response.status);
         }
       },
     );
@@ -78,10 +79,11 @@ export const Profile = () => {
         },
       },
       (response: CRMQueryStatusResponse) => {
-        setCRMQueryStatus(response);
         setIsCreating(false);
         if (typeof response === 'object' && 'message' in response) {
           setError(response);
+        } else {
+          setCRMQueryStatus(response.status);
         }
       },
     );

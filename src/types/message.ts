@@ -4,6 +4,7 @@ enum MessageSubject {
   INFO_QUERY = 'info-query',
   FETCH_ERROR = 'fetch-error',
   CREATE_RECORD = 'create-record',
+  DELETE_RECORD = 'delete-record',
 }
 
 enum MessageRecipient {

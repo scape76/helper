@@ -41,7 +41,7 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
     const avatarUrl = avatarImgElement?.src;
 
-    const id = extractIdFromLinkedInURL(contextUrl) ?? '';
+    const publicId = extractIdFromLinkedInURL(contextUrl) ?? '';
 
     const observer = new MutationObserver(() => {
       if (contextUrl !== window.location.href) {
@@ -55,7 +55,7 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
           displayName: name ?? 'Anonymous',
           email,
           avatarUrl,
-          id,
+          publicId,
           description: contextUrl,
         };
 
@@ -68,18 +68,18 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
     observer.observe(bodyList, { childList: true, subtree: true });
 
     const contactInfoElement = getElementBySelectors<HTMLAnchorElement>(
-      contactInfoElementSelector(id),
+      contactInfoElementSelector(publicId),
     );
 
     if (!contactInfoElement) {
       response({
         displayName: name ?? 'Anonymous',
         avatarUrl,
-        id,
+        publicId,
         description: contextUrl,
       });
     }
-    
+
     contactInfoElement?.click();
 
     return true;

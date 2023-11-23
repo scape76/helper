@@ -8,7 +8,7 @@ import {
   MessageSubject,
   ProfileInfo,
 } from '@/types';
-import { Loader2 } from 'lucide-react';
+import { Check, Loader2, Trash2 } from 'lucide-react';
 import './App.css';
 import { linkedInProfileUrlRegex } from '@/lib/config';
 import { useHref } from '@/hooks/useHref';
@@ -16,10 +16,12 @@ import { useHref } from '@/hooks/useHref';
 function App() {
   const href = useHref();
 
+  const [contactId, setContactId] = useState<string>();
   const [profileInfo, setProfileInfo] = useState<ProfileInfo>();
   const [error, setError] = useState<ErrorMessage>();
-  const [crmQueryStatus, setCRMQueryStatus] = useState<CRMQueryStatusResponse>();
+  const [crmQueryStatus, setCRMQueryStatus] = useState<ContactQueryStatus>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
   const searchForCRMRecord = () => {
@@ -35,10 +37,12 @@ function App() {
         },
       },
       (response: CRMQueryStatusResponse) => {
-        setCRMQueryStatus(response);
         setIsLoading(false);
         if (typeof response === 'object' && 'message' in response) {
           setError(response);
+        } else {
+          setCRMQueryStatus(response.status);
+          setContactId(response.payload.id);
         }
       },
     );
@@ -72,23 +76,48 @@ function App() {
         },
       },
       (response: CRMQueryStatusResponse) => {
-        setCRMQueryStatus(response);
         setIsCreating(false);
         if (typeof response === 'object' && 'message' in response) {
           setError(response);
+        } else {
+          setCRMQueryStatus(response.status);
         }
       },
     );
   }, [profileInfo]);
 
+  const deleteCRMRecord = useCallback(() => {
+    if (!contactId) return;
+    setError(undefined);
+    setIsDeleting(true);
+    chrome.runtime.sendMessage(
+      {
+        from: MessageFrom.SCRIPT,
+        subject: MessageSubject.DELETE_RECORD,
+        payload: {
+          id: contactId,
+        },
+      },
+      (response: CRMQueryStatusResponse) => {
+        setIsDeleting(false);
+        if (typeof response === 'object' && 'message' in response) {
+          setError(response);
+        } else {
+          setCRMQueryStatus(response.status);
+        }
+      },
+    );
+  }, [contactId]);
+
   useEffect(() => {
     if (href.includes('overlay/contact-info')) return;
+    setCRMQueryStatus(undefined);
     getProfileInfo();
   }, [href]);
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener((msg, sender, response) => {
-      if (msg.from === MessageFrom.BACKGROUND && msg.subject === MessageSubject.FETCH_ERROR) {
+      if (msg.subject === MessageSubject.FETCH_ERROR) {
         setError(msg.error);
         response();
       }
@@ -107,11 +136,24 @@ function App() {
           </button>
         </>
       )}
-      {crmQueryStatus === ContactQueryStatus.found && (
-        <span className="status-info">Contact already exists in CRM</span>
+      {crmQueryStatus === ContactQueryStatus.found && contactId && (
+        <span className="status-info flex">
+          Contact already exists in CRM <Check className="icon success" />
+          <button onClick={() => deleteCRMRecord()} className="btn ml-2">
+            {isDeleting ? <Loader2 className="icon animate-spin" /> : <Trash2 className="icon" />}
+            Delete
+          </button>
+        </span>
+      )}
+      {crmQueryStatus === ContactQueryStatus.deleted && (
+        <span className="status-info flex">
+          Successfully deleted a record <Check className="icon success" />
+        </span>
       )}
       {crmQueryStatus === ContactQueryStatus.created && (
-        <span className="status-info">Successfully created a new record</span>
+        <span className="status-info flex">
+          Successfully created a new record <Check className="icon success" />
+        </span>
       )}
       <span className="error-message">{error?.message}</span>
     </div>

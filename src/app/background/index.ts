@@ -1,7 +1,7 @@
 import { CRMInfoResponse, ContactQueryStatus, Credentials, ErrorTypes, StorageKeys } from '@/types';
 import { MessageFrom, MessageSubject } from '@/types/message';
 import { ChromeStorage } from '@/lib/chrome-storage';
-import { createContact, getAuthTokens, getContactByFullname } from '@/lib/zoho';
+import { createContact, deleteContact, getAuthTokens, getContactByFullname } from '@/lib/zoho';
 
 console.log('background is running');
 
@@ -28,17 +28,17 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
       getContactByFullname(msg.payload.fullName).then((contact) => {
         if (contact) {
-          response(ContactQueryStatus.found);
+          response({ status: ContactQueryStatus.found, payload: { id: contact.id } });
         }
 
-        response(ContactQueryStatus.notFound);
+        response({ status: ContactQueryStatus.notFound });
       });
     });
 
     return true;
   }
 
-  if (msg.from === MessageFrom.POPUP && msg.subject === MessageSubject.CREATE_RECORD) {
+  if (msg.subject === MessageSubject.CREATE_RECORD) {
     getCredentials().then(async (credentials) => {
       if (!credentials) {
         return response({ message: 'Credentials not set!', type: ErrorTypes.undefinedCredentials });
@@ -49,10 +49,31 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
       const data = await createContact(msg.payload.profile);
 
       if (data) {
-        response(ContactQueryStatus.created);
+        response({ status: ContactQueryStatus.created });
       }
 
-      response(ContactQueryStatus.error);
+      response({ status: ContactQueryStatus.error });
+    });
+
+    return true;
+  }
+
+  if (msg.subject === MessageSubject.DELETE_RECORD) {
+    console.log('in here', msg);
+    getCredentials().then(async (credentials) => {
+      if (!credentials) {
+        return response({ message: 'Credentials not set!', type: ErrorTypes.undefinedCredentials });
+      }
+
+      if (!msg.payload.id) return response(null);
+
+      const data = await deleteContact(msg.payload.id);
+
+      if (data) {
+        response({ status: ContactQueryStatus.deleted });
+      }
+
+      response({ status: ContactQueryStatus.error });
     });
 
     return true;

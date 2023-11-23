@@ -96,7 +96,7 @@ const getUserProfileInfo = async (): Promise<ProfileInfo | null | undefined> => 
 
     const avatarUrl = avatarImgElement?.src;
 
-    const id = extractIdFromLinkedInURL(contextUrl) ?? '';
+    const publicId = extractIdFromLinkedInURL(contextUrl) ?? '';
 
     const observer = new MutationObserver(() => {
       const sectionElement = document.querySelector('section.pv-profile-section');
@@ -112,7 +112,7 @@ const getUserProfileInfo = async (): Promise<ProfileInfo | null | undefined> => 
           displayName: name ?? 'Anonymous',
           email,
           avatarUrl,
-          id,
+          publicId,
           description: contextUrl,
         };
 
@@ -125,7 +125,7 @@ const getUserProfileInfo = async (): Promise<ProfileInfo | null | undefined> => 
     observer.observe(bodyList, { childList: true, subtree: true });
 
     const contactInfoElement = getElementBySelectors<HTMLAnchorElement>(
-      contactInfoElementSelector(id),
+      contactInfoElementSelector(publicId),
     );
 
     if (!contactInfoElement) {
@@ -133,7 +133,7 @@ const getUserProfileInfo = async (): Promise<ProfileInfo | null | undefined> => 
         displayName: name ?? 'Anonymous',
         avatarUrl,
         description: contextUrl,
-        id,
+        publicId,
       });
     }
 

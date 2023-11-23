@@ -151,6 +151,48 @@ async function createContact(profile: ProfileInfo, depth: number = 0) {
   return body.data?.[0];
 }
 
+async function deleteContact(id: string, depth: number = 0) {
+  if (depth > 1) {
+    catchZohoError({ error: 'Too many requests' });
+    return;
+  }
+
+  const credentials = await getCredentials();
+
+  if (!credentials) return catchZohoError({ error: 'missing_credentials' });
+
+  if (credentials?.accessToken?.length === 0) {
+    const isTokenRetrieved = await refreshToken();
+    if (isTokenRetrieved) {
+      return deleteContact(id, depth + 1);
+    } else {
+      return;
+    }
+  }
+
+  const res = await fetch(`${ZOHO_API_DOMAIN}/bigin/v1/Contacts/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `${credentials.accessToken}`,
+    },
+  });
+
+  const string = await res.text();
+  const body = string === '' ? {} : JSON.parse(string);
+
+  if (res.status === 401) {
+    const isTokenRetrieved = await refreshToken();
+
+    if (isTokenRetrieved) {
+      return deleteContact(id, depth + 1);
+    }
+
+    return catchZohoError(body.error);
+  }
+
+  return body.data?.[0];
+}
+
 async function refreshToken() {
   const credentials = await getCredentials();
 
@@ -175,4 +217,4 @@ async function refreshToken() {
   return true;
 }
 
-export { getAuthTokens, getContactByFullname, createContact };
+export { getAuthTokens, getContactByFullname, createContact, deleteContact };

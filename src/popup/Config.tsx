@@ -1,11 +1,5 @@
 import { useState, useEffect, useReducer, useCallback } from 'react';
-import {
-  Credentials,
-  StorageKeys,
-  MessageSubject,
-  MessageFrom,
-  ErrorMessage,
-} from '@/types';
+import { Credentials, StorageKeys, MessageSubject, MessageFrom, ErrorMessage } from '@/types';
 import { ChromeStorage } from '@/lib/chrome-storage';
 import { Input } from '@/components/ui/input';
 import '@/globals.css';
@@ -170,7 +164,7 @@ export const Config = () => {
           <span className="w-full break-words text-muted-foreground mt-2">
             * Provide a scope with
             <p>
-              ZohoBigin.modules.Contacts.CREATE,ZohoSearch.securesearch.READ,ZohoBigin.modules.Contacts.READ
+              ZohoBigin.modules.Contacts.CREATE,ZohoSearch.securesearch.READ,ZohoBigin.modules.Contacts.READ,ZohoBigin.modules.Contacts.DELETE
             </p>
           </span>
           <Button type="submit" className="w-full" disabled={isInitialized}>

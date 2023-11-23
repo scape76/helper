@@ -25,6 +25,16 @@
     margin-left: 1rem;
 }
 
+.flex {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.success {
+    color: #15803d;
+}
+
 .btn {
     display: inline-flex;
     align-items: center;
